@@ -146,17 +146,13 @@ class Video (object):
     def write_key_frames_hashes(self):
         file_name = os.path.basename(self.video_source)
         data = {}
-        data.setdefault(name)
-
+        data.setdefault(file_name)
+        r = list()
         for key_frame in tqdm(list(self.key_frames), desc="Writing files"):
-
-
-
-            f = open(name, "a")
-            json_str = json.dumps([os.path.basename(self.video_source), {'hash_method': (self.method)}, {'distance': (self.dist)}, {'cropping':(self.cropping)}])
-            f.write(json_str)
-            f.close()
-
+            r.append({'hash':key_frame['hash'],'hash_method':self.method,'distance:':self.dist,'cropping':self.cropping})
+        data[file_name] = r
+        with open(self.destination_path + "/" + file_name, 'w') as outfile:
+            json.dump(data, outfile)
 
     def check_hits(self):
         hits = 0
@@ -199,6 +195,11 @@ def main(src, dst, dist, meth, crop):
 
 
 if __name__ == '__main__':
+    import json
+
+    with open('keyframes/cnc_vol_coralesoeraantes_15_comisiones.mp4') as json_file:
+        data = json.load(json_file)
+
     source, destination, distance, method, crop = check_args(sys.argv[1:])
     sys.exit(main(source, destination, distance, method, crop))
 
