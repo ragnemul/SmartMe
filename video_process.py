@@ -179,11 +179,11 @@ def main(src, dst, dist, meth, crop):
     video = Video(src, dst, dist, meth, crop)
     video.load_video()
 
-    # video.process_video()
-    # video.check_hits()
-    # video.write_key_frames_hashes()
+    video.process_video()
+    video.check_hits()
+    video.write_key_frames_hashes()
 
-    video.show_video(video.get_frames())
+    video.show_video(video.get_key_frames())
     #cv2.waitKey()
 
 
