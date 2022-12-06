@@ -136,14 +136,22 @@ class Video (object):
         pbar.close()
 
 
-    def write_key_frames(self):
+    def save_key_frames(self):
         for key_frame in tqdm(list(self.key_frames), desc="Writing files"):
             name = self.destination_path + '/' + str(key_frame['hash']) + '.jpg'
             cv2.imwrite(name, key_frame['frame'])
 
+# Hacer JSON especiifcando nombre de fichero con los campos: hash, method, distance
+
     def write_key_frames_hashes(self):
+        file_name = os.path.basename(self.video_source)
+        data = {}
+        data.setdefault(name)
+
         for key_frame in tqdm(list(self.key_frames), desc="Writing files"):
-            name = self.destination_path + '/' + str(key_frame['hash'])
+
+
+
             f = open(name, "a")
             json_str = json.dumps([os.path.basename(self.video_source), {'hash_method': (self.method)}, {'distance': (self.dist)}, {'cropping':(self.cropping)}])
             f.write(json_str)
