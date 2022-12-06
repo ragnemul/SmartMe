@@ -189,6 +189,7 @@ def main(src, dst, dist, meth, crop):
     #cv2.waitKey()
 
 
+
 if __name__ == '__main__':
     source, destination, distance, method, crop = check_args(sys.argv[1:])
     sys.exit(main(source, destination, distance, method, crop))
