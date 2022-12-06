@@ -3,6 +3,7 @@ import argparse
 import cv2
 from tqdm import tqdm
 import os
+import json
 
 
 
@@ -144,7 +145,8 @@ class Video (object):
         for key_frame in tqdm(list(self.key_frames), desc="Writing files"):
             name = self.destination_path + '/' + str(key_frame['hash'])
             f = open(name, "a")
-            f.write(os.path.basename(self.video_source))
+            json_str = json.dumps([os.path.basename(self.video_source), {'hash_method': (self.method)}, {'distance': (self.dist)}, {'cropping':(self.cropping)}])
+            f.write(json_str)
             f.close()
 
 
