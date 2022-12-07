@@ -35,6 +35,7 @@ class KeyFrames (object):
 
         for root, dirs, files in os.walk(self.keyframes_path):
             for file in files:
+
                 f = open(self.keyframes_path+"/"+file)
                 data = json.load(f)
                 if self.distance(data['hash'], self.hash) <= self.dist:

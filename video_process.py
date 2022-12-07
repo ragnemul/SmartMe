@@ -77,7 +77,7 @@ class Video (object):
 
 
     def load_video(self):
-        for _ in tqdm(range(self.length), desc="Loading video"):
+        for i in tqdm(range(self.length), desc="Loading video"):
             ret, frame = self.cap.read()
             if not ret:
                 break
@@ -93,6 +93,7 @@ class Video (object):
 
             frame_dict = {
                 "frame": frame,
+                "n_frame" : i,
                 "hash": hash_val
             }
             self.frames.append(frame_dict)
@@ -149,7 +150,7 @@ class Video (object):
         data.setdefault(file_name)
         r = list()
         for key_frame in tqdm(list(self.key_frames), desc="Writing files"):
-            r.append({'hash':key_frame['hash'],'hash_method':self.method,'distance:':self.dist,'cropping':self.cropping})
+            r.append({'n_frame':key_frame['n_frame'], 'hash':key_frame['hash'],'hash_method':self.method,'distance:':self.dist,'cropping':self.cropping})
         data[file_name] = r
         with open(self.destination_path + "/" + file_name, 'w') as outfile:
             json.dump(data, outfile)
@@ -195,11 +196,6 @@ def main(src, dst, dist, meth, crop):
 
 
 if __name__ == '__main__':
-    import json
-
-    with open('keyframes/cnc_vol_coralesoeraantes_15_comisiones.mp4') as json_file:
-        data = json.load(json_file)
-
     source, destination, distance, method, crop = check_args(sys.argv[1:])
     sys.exit(main(source, destination, distance, method, crop))
 
