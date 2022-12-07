@@ -152,7 +152,7 @@ class Video (object):
         for key_frame in tqdm(list(self.key_frames), desc="Writing files"):
             r.append({'n_frame':key_frame['n_frame'], 'hash':key_frame['hash'],'hash_method':self.method,'distance:':self.dist,'cropping':self.cropping})
         data[file_name] = r
-        with open(self.destination_path + "/" + file_name, 'w') as outfile:
+        with open(self.destination_path + "/" + file_name + ".json", 'w') as outfile:
             json.dump(data, outfile)
 
     def check_hits(self):

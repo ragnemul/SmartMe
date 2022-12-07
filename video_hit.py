@@ -22,6 +22,10 @@ class KeyFrames (object):
         print("Freeing resources")
         print("Terminate")
 
+    @staticmethod
+    def hamming(a, b):
+        return bin(int(a) ^ int(b)).count('1')
+
     def distance(self, hash1, hash2):
         if self.method == "phash" or self.method == "dhash":
             return self.hamming(hash1, hash2)
@@ -35,11 +39,15 @@ class KeyFrames (object):
 
         for root, dirs, files in os.walk(self.keyframes_path):
             for file in files:
+                if not file.endswith('.json'):
+                    continue
+                with open(self.keyframes_path + "/" + file) as json_file:
+                    data = json.load(json_file)
 
-                f = open(self.keyframes_path+"/"+file)
-                data = json.load(f)
-                if self.distance(data['hash'], self.hash) <= self.dist:
-                    pass
+                key = os.path.splitext(file)[0]
+                hits = [self.distance(data[key][i]['hash'], int(self.hash)) <= self.dist for i in range(len(data[key]))]
+                if sum(hits) >= 1:
+                    print (self.keyframes_path + "/" + file, " video hit!")
         return video_file
 
 
