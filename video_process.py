@@ -173,12 +173,10 @@ def check_args(args=None):
     parser.add_argument("--destination_path", help="path for storing the frames", required=True)
     parser.add_argument('--distance', type=int, help='image distance', default=0)
     parser.add_argument('--method', help='hash method', default='average', choices=['average', 'phash', 'dhash'])
-    parser.add_argument('--cropping', type=int, help='vertical cropping percentaje over the image (do not type percentaje sign here) ', default=33)
+    parser.add_argument('--cropping', type=int, help='vertical cropping percentaje over the image (do not type percentaje sign here) ', default=33, choices=range(1,49))
+    parser.add_argument('--frame', type=int, help='frame number to get the hash', choices=range(1,float('inf')))
 
     results = parser.parse_args(args)
-    if not (results.cropping >= 0 and results.cropping < 50):
-        results.cropping = 33
-
     return results.source, results.destination_path, results.distance, results.method, results.cropping
 
 
@@ -192,6 +190,7 @@ def main(src, dst, dist, meth, crop):
 
     video.show_video(video.get_key_frames())
     #cv2.waitKey()
+    return 0
 
 
 

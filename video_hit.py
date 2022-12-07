@@ -3,17 +3,21 @@ import argparse
 from tqdm import tqdm
 import os
 import json
+import cv2
 
 
 
 class KeyFrames (object):
 
     def __init__(self, hash, kf_dir, method, dist):
-        [self.hash, self.keyframes_path, self.method, self.dist] = [hash, kf_dir, method, dist]
+        [self.frame_hash, self.keyframes_path, self.method, self.dist] = [hash, kf_dir, method, dist]
 
         if not os.path.isdir(self.keyframes_path):
             print("Cannot open key frames directory", self.keyframes_path)
             exit()
+
+        if method == "average":
+            self.hash = cv2.img_hash.AverageHash_create()
 
         print ("hash: ", hash)
         print ("Key frames directory: ", kf_dir)
@@ -45,7 +49,7 @@ class KeyFrames (object):
                     data = json.load(json_file)
 
                 key = os.path.splitext(file)[0]
-                hits = [self.distance(data[key][i]['hash'], int(self.hash)) <= self.dist for i in range(len(data[key]))]
+                hits = [self.distance(data[key][i]['hash'], self.frame_hash) <= self.dist for i in range(len(data[key]))]
                 if sum(hits) >= 1:
                     print (self.keyframes_path + "/" + file, " video hit!")
         return video_file
@@ -65,9 +69,8 @@ def check_args(args=None):
 
 def main(hash_key, kf_path, hash_method, hash_dist):
     keyframe = KeyFrames(hash_key, kf_path, hash_method, hash_dist)
-    video_hit = keyframe.locate()
-    if video_hit != None:
-        print ("Video hit: ", video_hit)
+    keyframe.locate()
+    return 0
 
 
 if __name__ == '__main__':
