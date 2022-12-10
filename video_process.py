@@ -9,9 +9,9 @@ import json
 
 class Video (object):
 
-    def __init__(self, src, dst, dist, meth, crop):
-        [self.video_source, self.destination_path, self.dist, self.method, self.cropping] = \
-            [src, dst, dist, meth, crop]
+    def __init__(self, src, dst, dist, meth, crop, frame, videoframes):
+        [self.video_source, self.destination_path, self.dist, self.method, self.cropping, self.frame_n, self.videoframes] = \
+            [src, dst, dist, meth, crop, frame, videoframes]
 
         self.cap = cv2.VideoCapture(self.video_source)
         if not self.cap.isOpened():
@@ -22,6 +22,10 @@ class Video (object):
         self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.fps = self.cap.get(cv2.CAP_PROP_FPS)
+
+        if self.frame_n is not None:
+            if (self.frame_n > self.length):
+                self.frame_n = self.length
 
         self.frames = []
         self.key_frames = []
@@ -112,14 +116,19 @@ class Video (object):
                 break
 
     def process_video(self):
-        i = 0
+        if self.frame_n is not None:
+            self.key_frames.append(self.frames[self.frame_n])
+            return
+
+        [i,n] = [0, self.length]
+
         pbar = tqdm(total = self.length, desc="Processing video")
-        while i < self.length:
+        while i < n:
             first = self.frames[i]
             #cv2.imshow("first", first["frame"])
             i += 1
             incr = 1
-            for j in range(i, self.length):
+            for j in range(i, n):
                 second = self.frames[j]
                 if  self.distance(first['hash'], second['hash']) >= self.dist:
                     #print ("Almacenando frame ",i-1)
@@ -151,6 +160,9 @@ class Video (object):
         r = list()
         for key_frame in tqdm(list(self.key_frames), desc="Writing files"):
             r.append({'n_frame':key_frame['n_frame'], 'hash':key_frame['hash'],'hash_method':self.method,'distance:':self.dist,'cropping':self.cropping})
+            if self.videoframes != '':
+                name = self.destination_path + '/' + str(key_frame['hash']) + '.jpg'
+                cv2.imwrite(name, key_frame['frame'])
         data[file_name] = r
         with open(self.destination_path + "/" + file_name + ".json", 'w') as outfile:
             json.dump(data, outfile)
@@ -173,15 +185,25 @@ def check_args(args=None):
     parser.add_argument("--destination_path", help="path for storing the frames", required=True)
     parser.add_argument('--distance', type=int, help='image distance', default=0)
     parser.add_argument('--method', help='hash method', default='average', choices=['average', 'phash', 'dhash'])
-    parser.add_argument('--cropping', type=int, help='vertical cropping percentaje over the image (do not type percentaje sign here) ', default=33, choices=range(1,49))
-    parser.add_argument('--frame', type=int, help='frame number to get the hash', choices=range(1,float('inf')))
+    parser.add_argument('--cropping', type=int, help='vertical cropping percentaje over the image (do not type percentaje sign here) ', default=33)
+    parser.add_argument('--frame', type=int, help='frame number to get the hash')
+    parser.add_argument('--videoframes', help='writes video frames', action='store_true')
+
 
     results = parser.parse_args(args)
-    return results.source, results.destination_path, results.distance, results.method, results.cropping
+    if not (results.cropping >= 0 and results.cropping < 50):
+        results.cropping = 33
+
+    if results.frame is not None:
+        if not (results.frame >= 0 and results.frame < 777):
+            0 if results.frame < 0 else 777
 
 
-def main(src, dst, dist, meth, crop):
-    video = Video(src, dst, dist, meth, crop)
+    return results.source, results.destination_path, results.distance, results.method, results.cropping, results.frame, results.videoframes
+
+
+def main(src, dst, dist, meth, crop, frame, videoframes):
+    video = Video(src, dst, dist, meth, crop, frame, videoframes)
     video.load_video()
 
     video.process_video()
@@ -195,6 +217,6 @@ def main(src, dst, dist, meth, crop):
 
 
 if __name__ == '__main__':
-    source, destination, distance, method, crop = check_args(sys.argv[1:])
-    sys.exit(main(source, destination, distance, method, crop))
+    source, destination, distance, method, crop, frame, videoframes = check_args(sys.argv[1:])
+    sys.exit(main(source, destination, distance, method, crop, frame, videoframes))
 
