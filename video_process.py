@@ -138,7 +138,7 @@ class Video (object):
                 cv2.imwrite(name, key_frame['frame'])
         data[file_name] = r
         with open(self.destination_path + "/" + file_name + ".json", 'w') as outfile:
-            json.dump(data, outfile)
+            json.dump(data, outfile, indent=4)
 
     def check_hits(self):
         hits = 0

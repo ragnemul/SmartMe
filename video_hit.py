@@ -4,23 +4,35 @@ from tqdm import tqdm
 import os
 import json
 import cv2
+import numpy as np
 
 
 
 class KeyFrames (object):
 
-    def __init__(self, hash, kf_dir, method, dist):
-        [self.frame_hash, self.keyframes_path, self.method, self.dist] = [hash, kf_dir, method, dist]
+    def __init__(self, json_hash, kf_dir, method, dist):
+        [self.json_hash, self.keyframes_path, self.method, self.dist] = [json_hash, kf_dir, method, dist]
 
         if not os.path.isdir(self.keyframes_path):
             print("Cannot open key frames directory", self.keyframes_path)
             exit()
 
-        if method == "average":
+        if self.method == "average":
             self.hash = cv2.img_hash.AverageHash_create()
+        if self.method == "phash":
+            self.hash = cv2.img_hash.PHash_create()
+        if self.method == "color":
+            self.hash = cv2.img_hash.ColorMomentHash_create()
 
-        print ("hash: ", hash)
+        print ("json_hash: ", json_hash)
         print ("Key frames directory: ", kf_dir)
+
+        self.key_filename = os.path.basename(self.json_hash)
+        self.key = os.path.splitext(self.key_filename)[0]
+        with open(self.json_hash) as json_file:
+            file_data = json.load(json_file)
+        self.frame_hash = file_data[self.key][0]['hash']
+
 
     def __del__(self):
         print("Freeing resources")
@@ -31,12 +43,7 @@ class KeyFrames (object):
         return bin(int(a) ^ int(b)).count('1')
 
     def distance(self, hash1, hash2):
-        if self.method == "phash" or self.method == "dhash":
-            return self.hamming(hash1, hash2)
-        elif self.method == "average":
-            return self.hash.compare(hash1, hash2)
-        else:
-            float("inf")
+        return self.hash.compare(hash1, hash2)
 
     def locate(self):
         video_file = None
@@ -49,7 +56,7 @@ class KeyFrames (object):
                     data = json.load(json_file)
 
                 key = os.path.splitext(file)[0]
-                hits = [self.distance(data[key][i]['hash'], self.frame_hash) <= self.dist for i in range(len(data[key]))]
+                hits = [self.distance(np.asarray(data[key][i]['hash']), np.asarray(self.frame_hash)) <= self.dist for i in range(len(data[key]))]
                 if sum(hits) >= 1:
                     print (self.keyframes_path + "/" + file, " video hit!")
         return video_file
@@ -57,23 +64,23 @@ class KeyFrames (object):
 
 def check_args(args=None):
     parser = argparse.ArgumentParser(description='Video process')
-    parser.add_argument("--hash", help="video source", required=True)
+    parser.add_argument("--json_hash", help="json that contains hash", required=True)
     parser.add_argument("--keyframes_path", help="path of key frames", required=True)
     parser.add_argument('--distance', type=int, help='image distance', default=0)
-    parser.add_argument('--method', help='hash method', default='average', choices=['average', 'phash', 'dhash'])
+    parser.add_argument('--method', help='hash method', default='average', choices=['average', 'phash', 'color'])
 
     results = parser.parse_args(args)
 
-    return results.hash, results.keyframes_path, results.method, results.distance
+    return results.json_hash, results.keyframes_path, results.method, results.distance
 
 
-def main(hash_key, kf_path, hash_method, hash_dist):
-    keyframe = KeyFrames(hash_key, kf_path, hash_method, hash_dist)
+def main(json_hash, kf_path, hash_method, hash_dist):
+    keyframe = KeyFrames(json_hash, kf_path, hash_method, hash_dist)
     keyframe.locate()
     return 0
 
 
 if __name__ == '__main__':
-    hash, keyframes_path, method, distance = check_args(sys.argv[1:])
-    sys.exit(main(hash, keyframes_path, method, distance))
+    json_hash, keyframes_path, method, distance = check_args(sys.argv[1:])
+    sys.exit(main(json_hash, keyframes_path, method, distance))
 
