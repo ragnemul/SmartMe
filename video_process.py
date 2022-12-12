@@ -32,7 +32,11 @@ class Video (object):
         self.cropping_val = round(self.cropping / 100,2)
 
         if meth == "average":
-            self.hash = self.hash = cv2.img_hash.AverageHash_create()
+            self.hash = cv2.img_hash.AverageHash_create()
+        if meth == "phash":
+            self.hash = cv2.img_hash.PHash_create()
+        if meth == "color":
+            self.hash = cv2.img_hash.ColorMomentHash_create()
 
         print ("Video source: ", src)
         print ("Destination path: ", dst)
@@ -50,34 +54,8 @@ class Video (object):
         print("Terminate")
 
 
-    @staticmethod
-    def dhash(cv_image, hash_size=8):
-        resized = cv2.resize(cv_image, (hash_size + 1, hash_size))
-        diff = resized[:, 1:] > resized[:, :-1]
-        return sum([2 ** i for i, v in enumerate(diff.flatten()) if v])
-
-    @staticmethod
-    def pHash(cv_image):
-        img = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
-        h = cv2.img_hash.pHash(img)  # 8-byte hash
-        ph = int.from_bytes(h.tobytes(), byteorder='big', signed=False)
-        return ph
-
-    @staticmethod
-    def hamming(a, b):
-        """
-        Calcula la distancia Hamming entre a y b.
-        """
-        return bin(int(a) ^ int(b)).count('1')
-
-
     def distance(self, hash1, hash2):
-        if self.method == "phash" or self.method == "dhash":
-            return self.hamming(hash1, hash2)
-        elif self.method == "average":
-            return self.hash.compare(hash1, hash2)
-        else:
-            float("inf")
+        return self.hash.compare(hash1, hash2)
 
 
     def load_video(self):
@@ -88,12 +66,7 @@ class Video (object):
 
             frame = frame[int(self.height * self.cropping_val):int(self.height - self.height * self.cropping_val),0:self.width]
 
-            if self.method == "phash":
-                hash_val = self.pHash(frame)
-            elif self.method == "dhash":
-                hash_val = self.dhash(frame)
-            else:
-                hash_val = self.hash.compute(frame)
+            hash_val = self.hash.compute(frame)
 
             frame_dict = {
                 "frame": frame,
@@ -130,7 +103,7 @@ class Video (object):
             incr = 1
             for j in range(i, n):
                 second = self.frames[j]
-                if  self.distance(first['hash'], second['hash']) >= self.dist:
+                if  self.distance(first['hash'], second['hash']) >= (self.dist - 1):
                     #print ("Almacenando frame ",i-1)
                     #cv2.imshow("almacenado", second["frame"])
                     self.key_frames.append(first)
@@ -159,7 +132,7 @@ class Video (object):
         data.setdefault(file_name)
         r = list()
         for key_frame in tqdm(list(self.key_frames), desc="Writing files"):
-            r.append({'n_frame':key_frame['n_frame'], 'hash':key_frame['hash'],'hash_method':self.method,'distance:':self.dist,'cropping':self.cropping})
+            r.append({'n_frame':key_frame['n_frame'], 'hash':key_frame['hash'].tolist(),'hash_method':self.method,'distance:':self.dist,'cropping':self.cropping})
             if self.videoframes != '':
                 name = self.destination_path + '/' + str(key_frame['hash']) + '.jpg'
                 cv2.imwrite(name, key_frame['frame'])
@@ -184,7 +157,7 @@ def check_args(args=None):
     parser.add_argument("--source", help="video source", required=True)
     parser.add_argument("--destination_path", help="path for storing the frames", required=True)
     parser.add_argument('--distance', type=int, help='image distance', default=0)
-    parser.add_argument('--method', help='hash method', default='average', choices=['average', 'phash', 'dhash'])
+    parser.add_argument('--method', help='hash method', default='average', choices=['average', 'phash', 'color'])
     parser.add_argument('--cropping', type=int, help='vertical cropping percentaje over the image (do not type percentaje sign here) ', default=33)
     parser.add_argument('--frame', type=int, help='frame number to get the hash')
     parser.add_argument('--videoframes', help='writes video frames', action='store_true')
