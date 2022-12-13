@@ -67,9 +67,10 @@ class Video (object):
             if not ret:
                 break
 
-            frame = frame[int(self.height * self.cropping_val):int(self.height - self.height * self.cropping_val),0:self.width]
+            frame_crp = frame[int(self.height * self.cropping_val):int(self.height - self.height * self.cropping_val),0:self.width]
+            #frame = cv2.resize(frame_crp, (8, 8), 0, 0, cv2.INTER_AREA)
 
-            hash_val = self.hash.compute(frame)
+            hash_val = self.hash.compute(frame_crp)
 
             frame_dict = {
                 "frame": frame,
