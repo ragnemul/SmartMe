@@ -38,6 +38,9 @@ class Video (object):
         if meth == "color":
             self.hash = cv2.img_hash.ColorMomentHash_create()
 
+
+
+
         print ("Video source: ", src)
         print ("Destination path: ", dst)
         print ("Method:", meth)
