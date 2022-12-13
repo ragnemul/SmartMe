@@ -56,7 +56,7 @@ class KeyFrames (object):
                     data = json.load(json_file)
 
                 key = os.path.splitext(file)[0]
-                hits = [self.distance(np.asarray(data[key][i]['hash']), np.asarray(self.frame_hash)) <= self.dist for i in range(len(data[key]))]
+                hits = [self.distance(np.asarray(data[key][i]['hash'], dtype=np.uint8), np.asarray(self.frame_hash, dtype=np.uint8)) <= self.dist for i in range(len(data[key]))]
                 if sum(hits) >= 1:
                     print (self.keyframes_path + "/" + file, " video hit!")
         return video_file
@@ -83,4 +83,13 @@ def main(json_hash, kf_path, hash_method, hash_dist):
 if __name__ == '__main__':
     json_hash, keyframes_path, method, distance = check_args(sys.argv[1:])
     sys.exit(main(json_hash, keyframes_path, method, distance))
+
+    """img = cv2.imread("test/test.jpg")
+    img_sz = cv2.resize(img, (180, 230))
+    hash = cv2.img_hash.pHash(img_sz)
+    hashser = cv2.img_hash.PHash_create()
+    frame_hash = np.zeros(hash.shape, dtype=np.uint8)
+    frame_hash[0] = [238,  16, 193,  82,  34, 175, 142,  28]
+    print(hashser.compare(hash, frame_hash))"""
+
 
