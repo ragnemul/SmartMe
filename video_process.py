@@ -137,10 +137,11 @@ class Video (object):
         r = list()
         for key_frame in tqdm(list(self.key_frames), desc="Writing files"):
             r.append({'n_frame':key_frame['n_frame'], 'hash':key_frame['hash'].tolist(),'hash_method':self.method,'distance:':self.dist,'cropping':self.cropping})
-            if self.videoframes != '':
+            if self.videoframes:
                 name = self.destination_path + '/' + str(key_frame['hash']) + '.jpg'
                 cv2.imwrite(name, key_frame['frame'])
         data[file_name] = r
+
         with open(self.destination_path + "/" + file_name + ".json", 'w') as outfile:
             json.dump(data, outfile, indent=4)
 
