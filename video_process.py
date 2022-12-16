@@ -73,7 +73,7 @@ class Video (object):
             hash_val = self.hash.compute(frame_crp)
 
             frame_dict = {
-                "frame": frame,
+                "frame": frame_crp,
                 "n_frame" : i,
                 "hash": hash_val
             }

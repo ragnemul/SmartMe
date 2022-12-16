@@ -110,10 +110,10 @@ def main(json_hash, image_file, kf_path, hash_method, hash_dist, cropping):
 
 
 if __name__ == '__main__':
-    """json_hash, image_file, keyframes_path, method, distance, cropping = check_args(sys.argv[1:])
-    sys.exit(main(json_hash, image_file, keyframes_path, method, distance, cropping))"""
+    json_hash, image_file, keyframes_path, method, distance, cropping = check_args(sys.argv[1:])
+    sys.exit(main(json_hash, image_file, keyframes_path, method, distance, cropping))
 
-    img1 = cv2.imread("frame_movil3.png")
+    """img1 = cv2.imread("frame_movil3.png")
     img1 = crop_image(img1, .33)
     img2 = cv2.imread("145_193_78_1_1_4_167_247__frame95_average.jpg")
     img2 = crop_image(img2, .33)
@@ -127,7 +127,7 @@ if __name__ == '__main__':
 
     cv2.imshow("img1", img1)
     cv2.imshow("img2", img2)
-    cv2.waitKey()
+    cv2.waitKey()"""
 
     """frame_hash = np.zeros(hash1.shape, dtype=np.uint8)
     frame_hash[0] = [145, 193,  78,   1,   1,   4, 167, 247]
