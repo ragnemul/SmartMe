@@ -87,7 +87,7 @@ def check_args(args=None):
     parser.add_argument('--method', help='hash method', default='average', choices=['average', 'phash', 'color'])
     parser.add_argument('--cropping', type=int,
                         help='vertical cropping percentaje over the image (do not type percentaje sign here) ',
-                        default=33)
+                        default=0)
 
     results = parser.parse_args(args)
 
