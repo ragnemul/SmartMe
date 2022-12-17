@@ -56,8 +56,8 @@ class Video (object):
 
         print("Terminate")
 
-
     def distance(self, hash1, hash2):
+
         return self.hash.compare(hash1, hash2)
 
 
