@@ -1,6 +1,5 @@
 import sys
 import argparse
-from tqdm import tqdm
 import os
 import json
 import cv2
@@ -91,7 +90,7 @@ def check_args(args=None):
 
     results = parser.parse_args(args)
 
-    if not (results.cropping >= 0 and results.cropping < 50):
+    if not (0 <= results.cropping < 50):
         results.cropping = 33
 
     return results.json_hash, results.image_file, results.keyframes_path, results.method, results.distance, results.cropping
